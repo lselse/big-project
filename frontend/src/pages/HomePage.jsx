@@ -11,7 +11,7 @@ export default function HomePage() {
   const [searchParams] = useSearchParams();
 
   // 🌟 주소가 '/' 이면 강제로 'HOME' 화면 렌더링, 그 외엔 파라미터 값 사용
-  const activeTab = location.pathname === '/' ? 'HOME' : (searchParams.get('tab') || 'EXAM');
+  const activeTab = location.pathname === '/' ? 'HOME' : (searchParams.get('tab') || 'HOME');
 
   const userRole = location.state?.role || localStorage.getItem('userRole') || 'GUEST';
 
