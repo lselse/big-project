@@ -169,7 +169,7 @@ frontend/
 * 시험 중 오류 대응 방법
 * 자주 발생하는 문제 안내
 
-## 🔄 서비스 플로우 (Applicant Service Flow)
+## 🔄 서비스 플로우 (Service Flow)
 
 ```mermaid
 graph TD
