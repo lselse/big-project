@@ -10,7 +10,6 @@ export default function Header() {
   const userRole = localStorage.getItem('userRole');
   const userEmail = localStorage.getItem('userEmail') || '비회원(게스트)';
 
-  // 🌟 오타 수정 완료 (대괄호 -> 소괄호)
   const userName = localStorage.getItem('userName') || userEmail.split('@')[0];
 
   // 🌟 관리자 권한인지 확인
@@ -93,6 +92,7 @@ export default function Header() {
                 <button className={`header-tab-btn ${currentTab === 'EXAM' ? 'active' : ''}`} onClick={() => handleTabClick('EXAM')}>평가</button>
                 <button className={`header-tab-btn ${currentTab === 'CHECK' ? 'active' : ''}`} onClick={() => handleTabClick('CHECK')}>시험 점검</button>
                 <button className={`header-tab-btn ${currentTab === 'PRACTICE' ? 'active' : ''}`} onClick={() => handleTabClick('PRACTICE')}>연습문제</button>
+                <button className={`header-tab-btn ${currentTab === 'RESULT' ? 'active' : ''}`} onClick={() => handleTabClick('RESULT')}>결과 조회</button>
                 <button className={`header-tab-btn ${currentTab === 'NOTICE' ? 'active' : ''}`} onClick={() => handleTabClick('NOTICE')}>공지사항</button>
                 <button className={`header-tab-btn ${currentTab === 'FAQ' ? 'active' : ''}`} onClick={() => handleTabClick('FAQ')}>FAQ</button>
               </>

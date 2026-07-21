@@ -15,6 +15,7 @@ import CheckTab from '../applicant/CheckTab';
 import PracticeTab from '../applicant/PracticeTab';
 import NoticeTab from '../applicant/NoticeTab';
 import FaqTab from '../applicant/FaqTab';
+import ResultTab from '../applicant/ResultTab';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -63,6 +64,7 @@ export default function HomePage() {
                   {activeTab === 'EXAM' && '평가 목록'}
                   {activeTab === 'CHECK' && '사전 환경 점검 안내'}
                   {activeTab === 'PRACTICE' && '연습문제 목록'}
+                  {activeTab === 'RESULT' && '역량 평가 결과 조회'} {/* 🌟 결과 타이틀 추가 */}
                   {activeTab === 'NOTICE' && '공지사항'}
                   {activeTab === 'FAQ' && '자주 묻는 질문 (FAQ)'}
                 </h1>
@@ -74,10 +76,12 @@ export default function HomePage() {
               </div>
             )}
 
+            {/* 각 탭 컴포넌트 렌더링 부분에 추가 */}
             {activeTab === 'HOME' && <HomeTab />}
             {activeTab === 'EXAM' && <ExamTab onProtectedAction={handleProtectedAction} />}
             {activeTab === 'CHECK' && <CheckTab onProtectedAction={handleProtectedAction} />}
             {activeTab === 'PRACTICE' && <PracticeTab onProtectedAction={handleProtectedAction} />}
+            {activeTab === 'RESULT' && <ResultTab />} {/* 🌟 결과 리포트 탭 렌더링 연결 */}
             {activeTab === 'NOTICE' && <NoticeTab />}
             {activeTab === 'FAQ' && <FaqTab />}
           </>
