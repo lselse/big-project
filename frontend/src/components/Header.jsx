@@ -86,6 +86,9 @@ export default function Header() {
                 <button className={`header-tab-btn ${currentTab === 'EXAM_STATUS' ? 'active' : ''}`} onClick={() => handleTabClick('EXAM_STATUS')}>
                   <BarChart3 size={16} style={{ marginRight: 6 }} /> 응시자 현황 관리
                 </button>
+                <button className={`header-tab-btn ${currentTab === 'AI_REPORTS' ? 'active' : ''}`} onClick={() => handleTabClick('AI_REPORTS')}>
+                  <FileText size={16} style={{ marginRight: 6 }} /> 응시자 AI 리포트 검토
+                </button>
               </>
             ) : (
               /* ================= 3. 응시자 / 게스트 전용 탭 ================= */

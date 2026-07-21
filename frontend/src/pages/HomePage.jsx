@@ -21,6 +21,7 @@ import ResultTab from '../applicant/ResultTab';
 import LiveMonitoringTab from '../supervisor/LiveMonitoringTab';
 import CheatLogsTab from '../supervisor/CheatLogsTab';
 import ExamStatusTab from '../supervisor/ExamStatusTab';
+import SupervisorReportsTab from '../supervisor/ReportsTab';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ export default function HomePage() {
             {activeTab === 'LIVE_MONITORING' && <LiveMonitoringTab />}
             {activeTab === 'CHEAT_LOGS' && <CheatLogsTab />}
             {activeTab === 'EXAM_STATUS' && <ExamStatusTab />}
+            {activeTab === 'AI_REPORTS' && <SupervisorReportsTab />}
           </div>
         )}
 
