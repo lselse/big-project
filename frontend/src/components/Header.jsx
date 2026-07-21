@@ -7,12 +7,18 @@ export default function Header() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const currentTab = searchParams.get('tab') || 'EXAM';
+  // 🌟 주소가 '/' 이면 'HOME' 탭 활성화, 그 외에는 탭 파라미터 값 사용
+  const currentTab = location.pathname === '/' ? 'HOME' : (searchParams.get('tab') || 'HOME');
   const userRole = localStorage.getItem('userRole');
   const userEmail = localStorage.getItem('userEmail') || '비회원(게스트)';
+  const userName = localStorage.getItem('userName') || userEmail.split('@')[0];
 
   const handleTabClick = (tabName) => {
-    navigate(`/home?tab=${tabName}`);
+    if (tabName === 'HOME') {
+      navigate('/'); // 홈 탭은 깔끔하게 루트 경로로 이동
+    } else {
+      navigate(`/home?tab=${tabName}`);
+    }
   };
 
   const handleLogout = () => {
@@ -21,24 +27,30 @@ export default function Header() {
     navigate('/login');
   };
 
-  const isAuthOrLanding = location.pathname === '/' || location.pathname === '/login';
+  // 🌟 핵심 수정 포인트: '/' (홈 화면)에서는 숨기지 않고 오직 '/login'에서만 탭을 숨기도록 조건 변경
+  const isAuthPage = location.pathname === '/login';
 
   return (
     <header className="header">
-      {/* 1. 좌측 로고 + 네비게이션 탭을 묶는 그룹 */}
       <div className="header-left-group">
-
         {/* 로고 영역 */}
-        <div className="logo-area" onClick={() => navigate('/home?tab=EXAM')}>
+        <div className="logo-area" onClick={() => navigate('/')}>
           <div className="logo-icon" style={{ width: 34, height: 34 }}>
             <ShieldCheck color="#ffffff" size={20} />
           </div>
-          <span className="logo-title">AI 리터러시 역량 테스트</span>
+          <span className="logo-title">AI 리터러시 역량 테스트 플랫폼</span>
         </div>
 
-        {/* 네비게이션 탭 (아이콘 제거 및 심플 텍스트 화) */}
-        {!isAuthOrLanding && (
+        {/* 🌟 로그인 페이지가 아닐 때만 네비게이션 탭 항상 표시 */}
+        {!isAuthPage && (
           <nav className="header-nav">
+            <button
+              className={`header-tab-btn ${currentTab === 'HOME' ? 'active' : ''}`}
+              onClick={() => handleTabClick('HOME')}
+            >
+              홈
+            </button>
+
             <button
               className={`header-tab-btn ${currentTab === 'EXAM' ? 'active' : ''}`}
               onClick={() => handleTabClick('EXAM')}
@@ -77,13 +89,13 @@ export default function Header() {
         )}
       </div>
 
-      {/* 2. 우측 유저 상태 및 로그인/로그아웃 버튼 */}
+      {/* 🌟 로그인/로그아웃 버튼 등 우측 영역도 항상 표시 */}
       <div className="nav-right">
         {userRole && userRole !== 'GUEST' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div className="header-user-badge">
               <User size={14} color="#2563EB" />
-              <span>{userEmail.split('@')[0]}님</span>
+              <span>{userName}님 ({userRole === 'APPLICANT' ? '응시자' : '관리자'})</span>
             </div>
             <button className="logout-btn header-logout-btn" onClick={handleLogout}>
               <LogOut size={15} />
