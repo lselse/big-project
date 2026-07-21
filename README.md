@@ -204,6 +204,7 @@ graph TD
 | `npm run preview` | 빌드 결과 로컬 미리보기   |
 | `npm run lint`    | Oxlint 기반 코드 검사 |
 
+```
 React Frontend
       ↓ Axios / REST API
 Spring Boot Backend
@@ -211,3 +212,4 @@ Spring Boot Backend
 Database / AI Analysis Server
       ↓
 객체 탐지 · 행동 분석 · 코드 평가 모델
+```
