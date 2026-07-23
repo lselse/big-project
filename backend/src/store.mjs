@@ -71,6 +71,15 @@ export const createStore = async (filePath) => {
     addWarning: async (warning) => {
       data.warnings.push(warning);
       await save();
+    },
+    // 🌟 [추가됨] 감독관 승인 및 권한 취소 상태를 변경하고 파일에 저장하는 함수
+    updateUserStatus: async (userId, approvalStatus) => {
+      const user = data.users.find((u) => u.id === userId);
+      if (!user) {
+        throw new Error("사용자를 찾을 수 없습니다.");
+      }
+      user.approvalStatus = approvalStatus;
+      await save();
     }
   };
 };

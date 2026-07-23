@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, User, Lock, ArrowRight, UserCheck, ShieldAlert, Mail, UserPlus, LogIn, Eye } from 'lucide-react';
+import { ShieldCheck, User, Lock, ArrowRight, ShieldAlert, Mail, UserPlus, LogIn, Eye } from 'lucide-react';
 import { api, apiErrorMessage } from '../api/client';
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const [authMode, setAuthMode] = useState('LOGIN'); // 'LOGIN' 또는 'SIGNUP'
 
-  // 3대 권한 상태: 'APPLICANT'(응시자), 'SUPERVISOR'(감독관), 'ADMIN'(관리자)
-  const [role, setRole] = useState('APPLICANT');
+  // 관리자 및 감독관 권한 상태 ('SUPERVISOR' 또는 'ADMIN')
+  const [role, setRole] = useState('SUPERVISOR');
 
   // 입력값 상태 관리
   const [formData, setFormData] = useState({
@@ -63,7 +63,12 @@ export default function AuthPage() {
         });
         setAuthMode('LOGIN');
         setFormData({ username: '', email: formData.email, password: '', passwordConfirm: '' });
-        setSuccessMsg('회원가입 성공! 가입한 계정으로 로그인해주세요.');
+
+        if (role === 'SUPERVISOR') {
+          setSuccessMsg('감독관 가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.');
+        } else {
+          setSuccessMsg('회원가입 성공! 가입한 계정으로 로그인해주세요.');
+        }
       } catch (error) {
         setErrorMsg(apiErrorMessage(error, '회원가입 중 오류가 발생했습니다.'));
       }
@@ -71,7 +76,6 @@ export default function AuthPage() {
     }
 
     if (authMode === 'LOGIN') {
-      // 🌟 로그인 모드에서도 이메일이나 비밀번호가 비어있으면 에러 발생
       if (!formData.email.trim() || !formData.password.trim()) {
         setErrorMsg('모든 항목을 빠짐없이 입력해주세요.');
         return;
@@ -90,16 +94,14 @@ export default function AuthPage() {
 
         if (role === 'ADMIN') navigate('/home?tab=EXAM_CREATE');
         else if (role === 'SUPERVISOR') navigate('/home?tab=LIVE_MONITORING');
-        else navigate('/');
       } catch (error) {
-        setErrorMsg(apiErrorMessage(error, '로그인 중 오류가 발생했습니다.'));
+        setErrorMsg(apiErrorMessage(error, '로그인 중 오류가 발생했습니다. (승인 상태를 확인하세요)'));
       }
     }
   };
 
   // 현재 선택된 권한에 따른 placeholder 이메일 결정
   const getPlaceholderEmail = () => {
-    if (role === 'APPLICANT') return 'applicant@aivle.com';
     if (role === 'SUPERVISOR') return 'supervisor@aivle.com';
     return 'admin@aivle.com';
   };
@@ -110,11 +112,11 @@ export default function AuthPage() {
 
         {/* 상단 로고 및 타이틀 */}
         <div className="auth-header" style={{textAlign: 'center', marginBottom: '1.75rem'}}>
-          <div className="logo-icon" style={{width: 52, height: 52, backgroundColor: '#2563EB', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem auto'}}>
+          <div className="logo-icon" style={{width: 52, height: 52, backgroundColor: '#319795', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 0.75rem auto'}}>
             <ShieldCheck color="#ffffff" size={30} />
           </div>
-          <h1 style={{fontSize: '1.4rem', margin: '0 0 0.25rem 0', color: '#0f172a', fontWeight: 'bold'}}>AI 리터러시 역량 테스트 플랫폼</h1>
-          <p style={{color: '#64748b', margin: 0, fontSize: '0.85rem'}}>실시간 지능형 감독 및 자동 평가 시스템</p>
+          <h1 style={{fontSize: '1.4rem', margin: '0 0 0.25rem 0', color: '#0f172a', fontWeight: 'bold'}}>관리자 및 감독관 포털</h1>
+          <p style={{color: '#64748b', margin: 0, fontSize: '0.85rem'}}>AI 역량 평가 플랫폼 운영진 전용 로그인</p>
         </div>
 
         {/* 모드 전환 탭 (로그인 / 회원가입) */}
@@ -123,7 +125,7 @@ export default function AuthPage() {
             type="button"
             className={`mode-tab-btn ${authMode === 'LOGIN' ? 'active' : ''}`}
             onClick={() => handleModeSelect('LOGIN')}
-            style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0.6rem', border: 'none', borderRadius: '8px', backgroundColor: authMode === 'LOGIN' ? '#ffffff' : 'transparent', color: authMode === 'LOGIN' ? '#2563EB' : '#64748b', fontWeight: authMode === 'LOGIN' ? 'bold' : '500', cursor: 'pointer', boxShadow: authMode === 'LOGIN' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}}
+            style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0.6rem', border: 'none', borderRadius: '8px', backgroundColor: authMode === 'LOGIN' ? '#ffffff' : 'transparent', color: authMode === 'LOGIN' ? '#319795' : '#64748b', fontWeight: authMode === 'LOGIN' ? 'bold' : '500', cursor: 'pointer', boxShadow: authMode === 'LOGIN' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}}
           >
             <LogIn size={16} /><span>로그인</span>
           </button>
@@ -131,34 +133,27 @@ export default function AuthPage() {
             type="button"
             className={`mode-tab-btn ${authMode === 'SIGNUP' ? 'active' : ''}`}
             onClick={() => handleModeSelect('SIGNUP')}
-            style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0.6rem', border: 'none', borderRadius: '8px', backgroundColor: authMode === 'SIGNUP' ? '#ffffff' : 'transparent', color: authMode === 'SIGNUP' ? '#2563EB' : '#64748b', fontWeight: authMode === 'SIGNUP' ? 'bold' : '500', cursor: 'pointer', boxShadow: authMode === 'SIGNUP' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}}
+            style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '0.6rem', border: 'none', borderRadius: '8px', backgroundColor: authMode === 'SIGNUP' ? '#ffffff' : 'transparent', color: authMode === 'SIGNUP' ? '#319795' : '#64748b', fontWeight: authMode === 'SIGNUP' ? 'bold' : '500', cursor: 'pointer', boxShadow: authMode === 'SIGNUP' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'}}
           >
-            <UserPlus size={16} /><span>회원가입</span>
+            <UserPlus size={16} /><span>감독관 회원가입</span>
           </button>
         </div>
 
-        {/* 3대 권한 선택 탭 (응시자 / 감독관 / 시스템 관리자) */}
-        <div className="role-tab-container" style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem', marginBottom: '1.5rem'}}>
-          <button
-            type="button"
-            onClick={() => handleRoleSelect('APPLICANT')}
-            style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '0.5rem 0.2rem', border: role === 'APPLICANT' ? '2px solid #2563EB' : '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: role === 'APPLICANT' ? '#eff6ff' : '#ffffff', color: role === 'APPLICANT' ? '#2563EB' : '#64748b', fontWeight: role === 'APPLICANT' ? 'bold' : '500', fontSize: '0.75rem', cursor: 'pointer'}}
-          >
-            <UserCheck size={16} /><span>응시자</span>
-          </button>
+        {/* 권한 선택 탭 (감독관 / 시스템 관리자) */}
+        <div className="role-tab-container" style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '1.5rem'}}>
           <button
             type="button"
             onClick={() => handleRoleSelect('SUPERVISOR')}
-            style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '0.5rem 0.2rem', border: role === 'SUPERVISOR' ? '2px solid #16a34a' : '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: role === 'SUPERVISOR' ? '#f0fdf4' : '#ffffff', color: role === 'SUPERVISOR' ? '#16a34a' : '#64748b', fontWeight: role === 'SUPERVISOR' ? 'bold' : '500', fontSize: '0.75rem', cursor: 'pointer'}}
+            style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '0.6rem', border: role === 'SUPERVISOR' ? '2px solid #16a34a' : '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: role === 'SUPERVISOR' ? '#f0fdf4' : '#ffffff', color: role === 'SUPERVISOR' ? '#16a34a' : '#64748b', fontWeight: role === 'SUPERVISOR' ? 'bold' : '500', fontSize: '0.85rem', cursor: 'pointer'}}
           >
-            <Eye size={16} /><span>감독관</span>
+            <Eye size={18} /><span>감독관</span>
           </button>
           <button
             type="button"
             onClick={() => handleRoleSelect('ADMIN')}
-            style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '0.5rem 0.2rem', border: role === 'ADMIN' ? '2px solid #7c3aed' : '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: role === 'ADMIN' ? '#f5f3ff' : '#ffffff', color: role === 'ADMIN' ? '#7c3aed' : '#64748b', fontWeight: role === 'ADMIN' ? 'bold' : '500', fontSize: '0.75rem', cursor: 'pointer'}}
+            style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '0.6rem', border: role === 'ADMIN' ? '2px solid #7c3aed' : '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: role === 'ADMIN' ? '#f5f3ff' : '#ffffff', color: role === 'ADMIN' ? '#7c3aed' : '#64748b', fontWeight: role === 'ADMIN' ? 'bold' : '500', fontSize: '0.85rem', cursor: 'pointer'}}
           >
-            <ShieldAlert size={16} /><span>시스템 관리자</span>
+            <ShieldAlert size={18} /><span>시스템 관리자</span>
           </button>
         </div>
 
@@ -180,7 +175,7 @@ export default function AuthPage() {
 
           <div className="input-group" style={{margin: 0}}>
             <label className="input-label" style={{display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.35rem', color: '#334155'}}>
-              {role === 'APPLICANT' ? '응시자 이메일' : role === 'SUPERVISOR' ? '감독관 이메일' : '관리자 이메일'}
+              {role === 'SUPERVISOR' ? '감독관 이메일' : '관리자 이메일'}
             </label>
             <div className="input-wrapper" style={{position: 'relative', display: 'flex', alignItems: 'center'}}>
               <Mail size={18} color="#94a3b8" style={{position: 'absolute', left: '12px'}} />
@@ -229,7 +224,7 @@ export default function AuthPage() {
               width: '100%',
               marginTop: '0.75rem',
               padding: '0.85rem',
-              backgroundColor: role === 'APPLICANT' ? '#2563EB' : role === 'SUPERVISOR' ? '#16a34a' : '#7c3aed',
+              backgroundColor: role === 'SUPERVISOR' ? '#16a34a' : '#7c3aed',
               color: '#ffffff',
               border: 'none',
               borderRadius: '8px',
@@ -241,14 +236,14 @@ export default function AuthPage() {
               cursor: 'pointer'
             }}
           >
-            <span>{authMode === 'LOGIN' ? `${role === 'APPLICANT' ? '응시자' : role === 'SUPERVISOR' ? '감독관' : '관리자'} 로그인하기` : '회원가입 완료하기'}</span>
+            <span>{authMode === 'LOGIN' ? `${role === 'SUPERVISOR' ? '감독관' : '관리자'} 로그인하기` : '감독관 가입 신청하기'}</span>
             <ArrowRight size={18} />
           </button>
         </form>
 
         <div style={{marginTop: '1.5rem', fontSize: '0.85rem', color: '#64748b', textAlign: 'center'}}>
           {authMode === 'LOGIN' ? (
-            <span>계정이 없으신가요? 상단의 <strong>[회원가입]</strong> 탭을 눌러 가입하세요.</span>
+            <span>계정이 없으신가요? 상단의 <strong>[감독관 회원가입]</strong> 탭을 눌러 가입을 신청하세요.</span>
           ) : (
             <span>이미 계정이 있으신가요? 상단의 <strong>[로그인]</strong> 탭을 눌러 접속하세요.</span>
           )}

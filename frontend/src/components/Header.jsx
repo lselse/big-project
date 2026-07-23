@@ -53,7 +53,7 @@ export default function Header() {
           <div className="logo-icon" style={{ width: 34, height: 34 }}>
             <ShieldCheck color="#ffffff" size={20} />
           </div>
-          <span className="logo-title">AI 리터러시 역량 테스트 플랫폼</span>
+          <span className="logo-title">AI 리터러시 역량 평가 플랫폼</span>
         </div>
 
         {!isAuthPage && (
@@ -68,7 +68,7 @@ export default function Header() {
                   <FileText size={16} style={{ marginRight: 6 }} /> 문제/정책 관리
                 </button>
                 <button className={`header-tab-btn ${currentTab === 'USER_MGMT' ? 'active' : ''}`} onClick={() => handleTabClick('USER_MGMT')}>
-                  <Users size={16} style={{ marginRight: 6 }} /> 응시자 관리
+                  <Users size={16} style={{ marginRight: 6 }} /> 감독관 관리
                 </button>
                 <button className={`header-tab-btn ${currentTab === 'CHEAT_MGMT' ? 'active' : ''}`} onClick={() => handleTabClick('CHEAT_MGMT')}>
                   <ShieldAlert size={16} style={{ marginRight: 6 }} /> 금지사항 관리
@@ -78,7 +78,7 @@ export default function Header() {
                 </button>
               </>
             ) : isSupervisor ? (
-              /* ================= 2. 감독관 전용 탭 3개 ================= */
+              /* ================= 2. 감독관 전용 탭 4개 ================= */
               <>
                 <button className={`header-tab-btn ${currentTab === 'LIVE_MONITORING' ? 'active' : ''}`} onClick={() => handleTabClick('LIVE_MONITORING')}>
                   <Monitor size={16} style={{ marginRight: 6 }} /> 실시간 화상 관제
@@ -94,13 +94,9 @@ export default function Header() {
                 </button>
               </>
             ) : (
-              /* ================= 3. 응시자 / 게스트 전용 탭 ================= */
+              /* ================= 3. 비회원/방문자 전용 탭 (홈, 공지사항, FAQ만 노출) ================= */
               <>
                 <button className={`header-tab-btn ${currentTab === 'HOME' ? 'active' : ''}`} onClick={() => handleTabClick('HOME')}>홈</button>
-                <button className={`header-tab-btn ${currentTab === 'EXAM' ? 'active' : ''}`} onClick={() => handleTabClick('EXAM')}>평가</button>
-                <button className={`header-tab-btn ${currentTab === 'CHECK' ? 'active' : ''}`} onClick={() => handleTabClick('CHECK')}>시험 점검</button>
-                <button className={`header-tab-btn ${currentTab === 'PRACTICE' ? 'active' : ''}`} onClick={() => handleTabClick('PRACTICE')}>연습문제</button>
-                <button className={`header-tab-btn ${currentTab === 'RESULT' ? 'active' : ''}`} onClick={() => handleTabClick('RESULT')}>결과 조회</button>
                 <button className={`header-tab-btn ${currentTab === 'NOTICE' ? 'active' : ''}`} onClick={() => handleTabClick('NOTICE')}>공지사항</button>
                 <button className={`header-tab-btn ${currentTab === 'FAQ' ? 'active' : ''}`} onClick={() => handleTabClick('FAQ')}>FAQ</button>
               </>
@@ -113,9 +109,9 @@ export default function Header() {
         {userRole && userRole !== 'GUEST' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div className="header-user-badge">
-              <User size={14} color={isAdmin ? '#7c3aed' : isSupervisor ? '#16a34a' : '#2563EB'} />
+              <User size={14} color={isAdmin ? '#7c3aed' : '#16a34a'} />
               <span>
-                {userName}님 ({isAdmin ? '관리자' : isSupervisor ? '감독관' : '응시자'})
+                {userName}님 ({isAdmin ? '관리자' : '감독관'})
               </span>
             </div>
             <button className="logout-btn header-logout-btn" onClick={handleLogout}>
