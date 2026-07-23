@@ -19,21 +19,27 @@ export default function LoginPage() {
     }));
   };
 
-  // 로그인 제출 핸들러 (백엔드 API 연동 전까지는 더미 검증 수행)
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage('');
+  // 💡 버튼 활성화 여부 확인 (공백 제외)
+  const isFormValid =
+    (formData.username || '').trim() !== '' &&
+    (formData.password || '').trim() !== '';
 
-    if (!formData.username || !formData.password) {
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 기본 폼 제출(새로고침) 완벽 차단
+
+    const currentUsername = (formData.username || '').trim();
+    const currentPassword = (formData.password || '').trim();
+
+    // 💡 엔터키를 누르거나 브라우저 강제 제출이 일어나도 여기서 무조건 차단됩니다.
+    if (currentUsername === '' || currentPassword === '') {
       setErrorMessage('수험 번호(아이디)와 비밀번호를 모두 입력해주세요.');
-      return;
+      return; // 🚨 여기서 함수가 종료되므로 절대 navigate('/check')가 실행되지 않습니다.
     }
 
-    // [더미 검증] 추후 백엔드 Django API (예: /api/accounts/login/)로 교체될 영역입니다.
-    // 서비스 플로우상 로그인 성공 시 시험 사전 점검 화면(/check)으로 이동합니다.
-    console.log('로그인 시도:', formData);
+    setErrorMessage(''); // 에러 메시지 초기화
+    console.log('로그인 시도:', { username: currentUsername, password: currentPassword });
 
-    // 정상 로그인 가정 하에 페이지 이동
+    // 정상적으로 값이 있을 때만 이동
     navigate('/check');
   };
 
@@ -41,7 +47,6 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl border border-gray-100">
 
-        {/* 헤더 타이틀 영역 */}
         <div className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-600">
             <ShieldCheck className="h-7 w-7" />
@@ -54,8 +59,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* 로그인 폼 */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        {/* 💡 noValidate 추가: 브라우저 기본 검증 무시하고 커스텀 검증(handleSubmit)만 실행 */}
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit} noValidate>
           {errorMessage && (
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 text-center font-medium">
               {errorMessage}
@@ -75,10 +80,11 @@ export default function LoginPage() {
                   name="username"
                   type="text"
                   required
+                  autoComplete="off"
                   value={formData.username}
                   onChange={handleChange}
                   className="block w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
-                  placeholder="예: aivle23_01"
+                  placeholder="예: applicant@aivle.com"
                 />
               </div>
             </div>
@@ -95,6 +101,7 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   required
+                  autoComplete="off"
                   value={formData.password}
                   onChange={handleChange}
                   className="block w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-10 pr-3 text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 sm:text-sm"
@@ -107,17 +114,17 @@ export default function LoginPage() {
           <div>
             <button
               type="submit"
-              className="group relative flex w-full justify-center rounded-lg bg-teal-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all"
+              disabled={!isFormValid}
+              className={`group relative flex w-full justify-center rounded-lg px-4 py-3 text-sm font-semibold text-white shadow-md transition-all ${
+                isFormValid
+                  ? 'bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2'
+                  : 'bg-gray-400 cursor-not-allowed opacity-70'
+              }`}
             >
               로그인 및 본인 확인 시작
             </button>
           </div>
         </form>
-
-        {/* 하단 안내 문구 */}
-        <div className="text-center text-xs text-gray-400 pt-4 border-t border-gray-100">
-          KT AIVLE School 9기 빅프로젝트 23조 | 부정행위 방지 AI 감독 시스템
-        </div>
       </div>
     </div>
   );
