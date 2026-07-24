@@ -1,215 +1,178 @@
-# 🚀 AI 리터러시 역량 테스트 플랫폼
+# AI 리터러시 역량 테스트 플랫폼
 
-KT AIVLE School 9기 빅프로젝트 23조에서 개발하는  
-**실시간 AI 감독 시스템과 자동 평가 파이프라인을 활용한 개발자 역량 평가 플랫폼**의 프론트엔드 애플리케이션입니다.
+실시간 AI 감독과 자동 평가를 목표로 하는 온라인 역량 평가 플랫폼입니다. 현재는 React 프론트엔드와 Express 기반 개발용 REST API가 연결되어 있으며, 역할별 화면에서 실제 API 데이터를 조회·등록할 수 있습니다.
 
-온라인 시험 과정에서 응시자의 신원을 확인하고, 시험 환경과 의심 행동을 실시간으로 분석하여 공정한 개발 역량 평가 환경을 제공하는 것을 목표로 합니다.
+## 현재 구현 범위
 
----
+- 응시자, 감독관, 관리자 역할별 로그인
+- 응시자용 시험 목록 및 공지사항 조회
+- 관리자용 시험 등록 및 응시자 목록 조회
+- 감독관용 실시간 관제 대상 조회 및 경고 발송
+- JSON 파일 기반 개발용 데이터 저장
+- 역할 기반 API 권한 확인
 
-## 📌 프로젝트 개요
+AI 영상 분석, 실제 WebRTC 스트림 전송, 자동 채점, 파일 업로드는 화면 흐름만 준비되어 있으며 별도 서버 연동이 필요한 다음 단계 기능입니다.
 
-기존 온라인 코딩 테스트는 응시자의 실제 시험 환경과 문제 해결 과정을 충분히 확인하기 어렵다는 한계가 있습니다.
-
-본 플랫폼은 다음 기능을 결합하여 시험의 신뢰성과 평가의 객관성을 높입니다.
-
-- 시험 전 본인 인증 및 장비 점검
-- PC 웹캠과 휴대폰 보조 카메라 연동
-- AI 기반 의심 행동 및 금지 물품 탐지
-- 코드 작성 과정 및 결과 분석
-- 감독관 실시간 모니터링
-- 시험 종료 후 종합 역량 리포트 제공
-
----
-
-## 🛠️ Tech Stack
-
-| 구분 | 기술 |
-|---|---|
-| Framework | React 19 |
-| Build Tool | Vite 8 |
-| Routing | React Router DOM 7 |
-| HTTP Client | Axios |
-| Styling | Custom CSS, Flexbox, Grid |
-| CSS Processing | PostCSS, Autoprefixer |
-| Mock API | JSON Server |
-| Icons | Lucide React |
-| QR Code | qrcode.react |
-| Lint | Oxlint |
-
-> Tailwind CSS가 패키지에 포함되어 있으나, 현재 주요 화면 스타일은 `main.css` 기반의 Custom CSS를 사용합니다.
-
----
-
-## 📂 Project Architecture
-
-프로젝트 유지보수성과 확장성을 위해 관리자와 응시자 기능을 역할별 컴포넌트로 분리하였습니다.
+## 아키텍처
 
 ```text
-frontend/
-├── public/
-├── src/
-│   ├── assets/                      # 이미지 및 정적 리소스
-│   │
-│   ├── components/                  # 공통 및 역할별 컴포넌트
-│   │   ├── Header.jsx               # 권한별 동적 네비게이션
-│   │   │
-│   │   ├── admin/                   # 관리자 전용 컴포넌트
-│   │   │   ├── ExamCreateTab.jsx    # 시험 생성 및 일정 관리
-│   │   │   ├── PolicyMgmtTab.jsx    # 문제 및 시험 정책 관리
-│   │   │   ├── UserMgmtTab.jsx      # 응시자 및 권한 관리
-│   │   │   ├── CheatMgmtTab.jsx     # 부정행위 정책 관리
-│   │   │   └── AiConfigTab.jsx      # AI 모델 및 탐지 민감도 설정
-│   │   │
-│   │   └── applicant/               # 응시자·게스트 컴포넌트
-│   │       ├── HomeTab.jsx           # 플랫폼 소개
-│   │       ├── ExamTab.jsx           # 정규 평가 목록
-│   │       ├── CheckTab.jsx          # 시험 전 장비 점검
-│   │       ├── PracticeTab.jsx       # 모의 연습문제
-│   │       ├── NoticeTab.jsx         # 공지사항
-│   │       └── FaqTab.jsx            # 자주 묻는 질문
-│   │
-│   ├── pages/
-│   │   ├── HomePage.jsx             # 메인 라우팅 및 탭 제어
-│   │   └── AuthPage.jsx             # 로그인 및 회원가입
-│   │
-│   ├── styles/
-│   │   └── main.css                 # 전역 및 컴포넌트 스타일
-│   │
-│   ├── App.jsx                      # 라우터 및 전체 레이아웃
-│   └── main.jsx                     # React 애플리케이션 진입점
-│
-├── package.json
+Browser
+  |
+  | http://localhost:5173
+  v
+frontend/ (React + Vite)
+  |
+  | /api/*  Vite proxy
+  v
+backend/ (Express)
+  |
+  v
+backend/data/database.json (개발용 JSON 저장소)
+```
+
+프론트는 API 주소를 직접 사용하지 않고 `/api`로 요청합니다. [frontend/vite.config.js](frontend/vite.config.js)에서 해당 요청을 `http://localhost:3000` 백엔드로 전달합니다.
+
+## 프로젝트 구조
+
+```text
+.
+├── frontend/
+│   ├── src/
+│   │   ├── api/client.js          # Axios 공통 설정 및 인증 헤더
+│   │   ├── admin/                 # 관리자 화면
+│   │   ├── applicant/             # 응시자 화면
+│   │   ├── supervisor/            # 감독관 화면
+│   │   └── pages/AuthPage.jsx     # 로그인·회원가입
+│   └── vite.config.js             # /api 개발 프록시
+├── backend/
+│   ├── src/app.mjs                # REST API 및 권한 처리
+│   ├── src/store.mjs              # JSON 저장소 및 비밀번호 해싱
+│   ├── src/seed.mjs               # 최초 실행용 기본 데이터
+│   ├── src/server.mjs             # 서버 실행 진입점
+│   └── test/api.test.mjs          # API 통합 테스트
 └── README.md
 ```
 
-## ✨ Key Features
-### 1. 역할 기반 접근 제어
+## 시작하기
 
-사용자 권한에 따라 접근 가능한 메뉴와 기능을 구분합니다.
+Node.js 20 이상을 권장합니다. 프론트와 백엔드는 각각 별도 터미널에서 실행합니다.
 
-#### 관리자 ADMIN
-* 관리자 전용 네비게이션 제공
-* 시험 생성 및 일정 관리
-* 문제 및 시험 정책 관리
-* 응시자 명단 및 권한 관리
-* 부정행위 판정 기준 설정
-* AI 분석 모델 및 탐지 민감도 설정
+### 1. 백엔드 실행
 
-#### 응시자 APPLICANT
-* 응시 가능한 시험 확인
-* 시험 전 장비 및 환경 점검
-* 정규 시험 및 모의시험 응시
-* 시험 관련 공지사항과 FAQ 확인
-
-#### 게스트 GUEST
-* 플랫폼 소개 확인
-* 공지사항 및 FAQ 이용
-* 인증이 필요한 기능 접근 시 로그인 안내
-
-## 🧑‍💼 관리자 서비스
-* 시험 생성
-* 시험명 설정
-* 제한 시간 및 문항 수 설정
-* 시험 시작·종료 일시 설정
-* 시험 세션 등록 및 관리
-* 문제 및 정책 관리
-* 코딩 테스트 문제 등록
-* 허용 프로그래밍 언어 설정
-* 문항별 배점 설정
-* 컴파일 및 제출 정책 관리
-* 응시자 관리
-* 응시자 명단 조회
-* 응시 승인 상태 확인
-* 사용자 계정 및 권한 수정
-* 부정행위 정책 관리
-
-다음과 같은 의심 행동에 대한 탐지 기준과 제재 정책을 설정합니다.
-
-* 시선 이탈
-* 자리 이탈
-* 다중 인물 출현
-* 스마트폰 및 금지 물품 탐지
-* 이어폰·헤드셋 착용
-* 브라우저 화면 이탈
-* 비정상적인 음성 및 행동 감지
-* AI 분석 설정
-* AI 분석 모델 선택
-* 객체 및 행동 탐지 Threshold 설정
-* 자동 채점 및 코드 분석 모델 설정
-* 위험도 산정 기준 관리
-
-## 👨‍💻 응시자 서비스
-* 플랫폼 홈
-* 플랫폼 주요 기능 소개
-* 시험 진행 절차 안내
-* AI 기반 평가 방식 확인
-* 시험 목록
-* 응시 가능한 정규 평가 확인
-* 시험 시간과 문항 수 확인
-* 시험 입장 및 응시 상태 확인
-* 사전 장비 및 환경 점검
-
-시험 시작 전 다음 항목을 확인합니다.
-
-* 웹캠 연결
-* 마이크 연결
-* 화면 공유 상태
-* 인터넷 연결 상태
-* PC 브라우저 권한
-* 휴대폰 보조 카메라 QR 연동
-* 시험 환경 내 다중 인물 및 금지 물품 여부
-* 모의 연습문제
-* 실제 시험과 유사한 환경 제공
-* 코드 작성 및 제출 과정 연습
-* AI 감독 환경 사전 체험
-* 공지사항 및 FAQ
-* 시험 응시 유의사항
-* 보조 카메라 설치 방법
-* 시험 중 오류 대응 방법
-* 자주 발생하는 문제 안내
-
-## 🔄 서비스 플로우 (Service Flow)
-
-```mermaid
-graph TD
-    A[플랫폼 접속] --> B[로그인 및 사용자 인증]
-    B --> C[시험 목록 확인]
-    C --> D[PC 장비 및 시험 환경 점검]
-    D --> E[휴대폰 보조 카메라 연결]
-    E --> F[신분증 및 얼굴 본인 인증]
-    F --> G[온라인 코딩 시험 응시]
-    G --> H[AI 실시간 감독 및 행동 분석]
-    H --> I[코드 자동 채점 및 역량 분석]
-    I --> J[감독관 검토 및 최종 리포트 생성]
+```bash
+cd backend
+npm install
+npm run dev
 ```
 
-## 🤖 AI 연동 예정 기능
+API 서버는 `http://localhost:3000`에서 실행됩니다. 최초 실행하면 `backend/data/database.json`이 생성됩니다.
 
-프론트엔드는 백엔드 및 AI 서버에서 전달받은 분석 결과를 화면에 표시합니다.
+### 2. 프론트 실행
 
-* YOLO11n 기반 사람 및 금지 물품 탐지
-* MediaPipe 기반 시선·고개·손·자세 분석
-* InsightFace 기반 얼굴 비교
-* OCR 기반 신분증 정보 확인
-* 음성 및 다중 화자 분석
-* 코드 품질 및 유사도 분석
-* 부정행위 위험도 산정
-* 감독관용 분석 근거 및 리포트 제공
-
-| 명령어               | 설명              |
-| ----------------- | --------------- |
-| `npm run dev`     | Vite 개발 서버 실행   |
-| `npm run build`   | 배포용 프로젝트 빌드     |
-| `npm run preview` | 빌드 결과 로컬 미리보기   |
-| `npm run lint`    | Oxlint 기반 코드 검사 |
-
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-React Frontend
-      ↓ Axios / REST API
-Spring Boot Backend
-      ↓
-Database / AI Analysis Server
-      ↓
-객체 탐지 · 행동 분석 · 코드 평가 모델
+
+프론트는 기본적으로 `http://localhost:5173`에서 실행됩니다. 해당 포트가 이미 사용 중이면 Vite가 다른 포트를 안내하므로, 안내된 주소로 접속하면 됩니다.
+
+## 개발용 계정
+
+기본 계정의 비밀번호는 모두 `123`입니다.
+
+| 역할 | 이메일 | 사용 화면 |
+| --- | --- | --- |
+| 응시자 | `applicant@aivle.com` | 시험, 공지, 환경 점검 |
+| 감독관 | `supervisor@aivle.com` | 실시간 관제, 경고 발송 |
+| 관리자 | `admin@aivle.com` | 시험 생성, 응시자 관리 |
+
+공개 회원가입은 `APPLICANT`(응시자)만 가능합니다. 관리자와 감독관 계정은 현재 기본 데이터로 제공되며, 운영 환경에서는 별도의 관리자 계정 생성 절차를 추가해야 합니다.
+
+## API 목록
+
+| Method | Endpoint | 설명 | 권한 |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | 서버 상태 확인 | 공개 |
+| `POST` | `/api/auth/signup` | 응시자 회원가입 | 공개 |
+| `POST` | `/api/auth/login` | 역할별 로그인 및 토큰 발급 | 공개 |
+| `GET` | `/api/exams` | 시험 목록 조회 | 공개 |
+| `GET` | `/api/notices` | 공지사항 조회 | 공개 |
+| `GET` | `/api/admin/users` | 응시자 목록 조회 | 관리자 |
+| `POST` | `/api/admin/exams` | 시험 등록 | 관리자 |
+| `GET` | `/api/supervisor/examinees` | 관제 대상 조회 | 감독관 |
+| `POST` | `/api/supervisor/examinees/:id/warnings` | 응시자 경고 발송 | 감독관 |
+
+보호된 API는 로그인 응답의 토큰을 다음 형식으로 전달해야 합니다.
+
+```http
+Authorization: Bearer <token>
 ```
+
+프론트에서는 [frontend/src/api/client.js](frontend/src/api/client.js)의 `authHeaders()`가 이 헤더를 처리합니다.
+
+## 데이터와 보안
+
+- 개발 데이터는 `backend/data/database.json`에 저장되며 Git에는 포함되지 않습니다.
+- 비밀번호는 `scrypt` 해시로 저장합니다. 평문 비밀번호는 API 응답과 저장 파일에서 제거됩니다.
+- 서버 재시작 시 로그인 토큰은 초기화되므로 다시 로그인해야 합니다.
+- 개발용 JSON 저장소는 데모와 기능 개발용입니다. 동시 사용자, 백업, 검색·통계가 필요한 운영 환경에는 적합하지 않습니다.
+
+개발 데이터를 처음 상태로 되돌리려면 백엔드를 종료한 뒤 `backend/data/database.json`을 삭제하고 다시 실행합니다.
+
+## 화면과 API 연결 위치
+
+| 화면 | 프론트 파일 | 사용 API |
+| --- | --- | --- |
+| 로그인·회원가입 | `frontend/src/pages/AuthPage.jsx` | `/api/auth/signup`, `/api/auth/login` |
+| 시험 목록 | `frontend/src/applicant/ExamTab.jsx` | `/api/exams` |
+| 공지사항 | `frontend/src/applicant/NoticeTab.jsx` | `/api/notices` |
+| 시험 생성 | `frontend/src/admin/ExamCreateTab.jsx` | `/api/admin/exams` |
+| 응시자 관리 | `frontend/src/admin/UserMgmtTab.jsx` | `/api/admin/users` |
+| 실시간 관제 | `frontend/src/supervisor/LiveMonitoringTab.jsx` | `/api/supervisor/examinees`, `/warnings` |
+
+## 기능을 추가하는 방법
+
+새 기능은 아래 순서로 작업하면 프론트와 백엔드가 어긋나는 일을 줄일 수 있습니다.
+
+1. 필요한 데이터와 API 요청·응답 형식을 먼저 정합니다.
+2. `backend/src/app.mjs`에 API를 추가하고, 필요한 데이터 저장 로직은 `backend/src/store.mjs`에 추가합니다.
+3. 권한이 필요한 API는 `authenticate`와 `requireRole(...)`을 적용합니다.
+4. `backend/test/api.test.mjs`에 성공, 권한 없음, 잘못된 입력 테스트를 추가합니다.
+5. `frontend/src/api/client.js`의 `api`와 `authHeaders()`를 사용해 화면을 연결합니다.
+6. 백엔드 테스트와 프론트 빌드를 실행합니다.
+
+예를 들어 관리자가 공지사항을 등록하는 기능을 추가한다면 다음이 필요합니다.
+
+- `POST /api/admin/notices` API 추가
+- 관리자 권한 검사
+- 저장소의 공지 데이터 추가 함수
+- 관리자 공지 작성 화면
+- 응시자 공지 목록에서 새 데이터 표시
+- 성공·권한 없음·빈 입력에 대한 API 테스트
+
+## 검증 명령어
+
+```bash
+# 백엔드 API 테스트
+cd backend
+npm test
+```
+
+```bash
+# 프론트 프로덕션 빌드
+cd frontend
+npm run build
+```
+
+```bash
+# 프론트 정적 검사
+cd frontend
+npm run lint
+```
+
+## 운영 DB 전환 계획
+
+현재 기능과 화면 흐름이 안정된 뒤에는 `database.json`을 MySQL 또는 PostgreSQL로 교체합니다. 사용자, 시험, 응시 기록, 부정행위 로그처럼 관계가 많은 서비스이므로 PostgreSQL을 우선 추천합니다.
+
+전환 시에는 JSON 저장소 역할을 DB 접근 계층으로 교체하고, 데이터베이스 마이그레이션과 환경 변수 기반 연결 정보를 추가합니다. 프론트의 API 주소와 화면 호출 방식은 유지할 수 있도록 API 응답 형식을 먼저 안정화하는 것이 중요합니다.
