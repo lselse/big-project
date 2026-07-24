@@ -90,7 +90,7 @@ export default function InviteMailTab() {
                   <th style={{ padding: '0.75rem' }}>응시자</th>
                   <th style={{ padding: '0.75rem' }}>발송 시각</th>
                   <th style={{ padding: '0.75rem' }}>링크 만료 시간</th>
-                  <th style={{ padding: '0.75rem' }}>일회성 인증 토큰</th>
+                  <th style={{ padding: '0.75rem' }}>시험 입장 링크</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,12 +99,15 @@ export default function InviteMailTab() {
                 ) : (
                   invitations.map((invitation) => {
                     const examinee = examinees.find((e) => e.id === invitation.examineeId);
+                    const entryLink = `${window.location.origin}/exam/enter?token=${invitation.token}`;
                     return (
                       <tr key={invitation.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                         <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>{examinee?.name ?? '알 수 없음'} ({examinee?.email})</td>
                         <td style={{ padding: '0.75rem', color: '#64748b' }}>{new Date(invitation.sentAt).toLocaleString('ko-KR')}</td>
                         <td style={{ padding: '0.75rem', color: '#64748b' }}>{new Date(invitation.expiresAt).toLocaleString('ko-KR')}</td>
-                        <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem', color: '#94a3b8' }}>{invitation.token}</td>
+                        <td style={{ padding: '0.75rem' }}>
+                          <a href={entryLink} target="_blank" rel="noreferrer" style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#2563EB', wordBreak: 'break-all' }}>{entryLink}</a>
+                        </td>
                       </tr>
                     );
                   })

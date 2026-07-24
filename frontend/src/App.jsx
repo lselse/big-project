@@ -5,6 +5,7 @@ import Header from './components/Header';
 import AuthPage from './pages/AuthPage';
 import HomePage from './pages/HomePage';
 import ExamCheckPage from './pages/ExamCheckPage';
+import ExamEntryPage from './pages/ExamEntryPage';
 import MobileProctoringPage from './pages/MobileProctoringPage';
 import MobileScanPage from './pages/MobileScanPage';
 import MobileMonitoringPage from './pages/MobileProctoringPage';
@@ -31,6 +32,9 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<AuthPage />} />
           <Route path="/home" element={<HomePage />} />
+
+          {/* 초대 메일 링크 기반 응시자 입장 (응시번호 확인) */}
+          <Route path="/exam/enter" element={<ExamEntryPage />} />
 
           {/* 장비 점검 페이지 */}
           <Route path="/exam/check" element={<ExamCheckPage />} />
