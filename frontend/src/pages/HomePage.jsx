@@ -1,12 +1,26 @@
 import React from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
-// 🌟 관리자 전용 탭 컴포넌트 임포트
-import ExamCreateTab from '../admin/ExamCreateTab';
-import PolicyMgmtTab from '../admin/PolicyMgmtTab';
+// 🌟 ADMIN 전용 탭 컴포넌트
+import OrgApprovalTab from '../admin/OrgApprovalTab';
 import UserMgmtTab from '../admin/UserMgmtTab';
-import CheatMgmtTab from '../admin/CheatMgmtTab';
+import AdminExamsTab from '../admin/AdminExamsTab';
+import AdminResultsTab from '../admin/AdminResultsTab';
+import PolicyMgmtTab from '../admin/PolicyMgmtTab';
 import AiConfigTab from '../admin/AiConfigTab';
+import AdminStatsTab from '../admin/AdminStatsTab';
+
+// 🌟 관리자(MANAGER) 전용 탭 컴포넌트
+import OrgRequestTab from '../manager/OrgRequestTab';
+import ExamineeMgmtTab from '../manager/ExamineeMgmtTab';
+import ManagerExamCreateTab from '../manager/ExamCreateTab';
+import InviteMailTab from '../manager/InviteMailTab';
+import ManagerPolicyTab from '../manager/PolicyMgmtTab';
+import LiveMonitoringTab from '../manager/LiveMonitoringTab';
+import ExamStatusTab from '../manager/ExamStatusTab';
+import CheatLogsTab from '../manager/CheatLogsTab';
+import ResultsTab from '../manager/ResultsTab';
+import TeamTab from '../manager/TeamTab';
 
 // 🌟 응시자 전용 탭 컴포넌트 임포트
 import HomeTab from '../applicant/HomeTab';
@@ -15,13 +29,6 @@ import CheckTab from '../applicant/CheckTab';
 import PracticeTab from '../applicant/PracticeTab';
 import NoticeTab from '../applicant/NoticeTab';
 import FaqTab from '../applicant/FaqTab';
-import ResultTab from '../applicant/ResultTab';
-
-// 🌟 감독관 전용 탭 컴포넌트 임포트
-import LiveMonitoringTab from '../supervisor/LiveMonitoringTab';
-import CheatLogsTab from '../supervisor/CheatLogsTab';
-import ExamStatusTab from '../supervisor/ExamStatusTab';
-import SupervisorReportsTab from '../supervisor/ReportsTab';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -29,14 +36,15 @@ export default function HomePage() {
   const [searchParams] = useSearchParams();
 
   const userRole = location.state?.role || localStorage.getItem('userRole') || 'GUEST';
+  const orgApproved = localStorage.getItem('userOrgId') && localStorage.getItem('userOrgStatus') === 'APPROVED';
 
   const isAdmin = userRole === 'ADMIN';
-  const isSupervisor = userRole === 'SUPERVISOR'; // 🌟 감독관 권한 체크 변수 추가
+  const isManager = userRole === 'MANAGER';
 
   // 🌟 권한별 기본 탭 설정
   const getDefaultTab = () => {
-    if (isAdmin) return 'EXAM_CREATE';
-    if (isSupervisor) return 'LIVE_MONITORING';
+    if (isAdmin) return 'ORG_APPROVAL';
+    if (isManager) return orgApproved ? 'EXAMINEE_MGMT' : 'ORG_REQUEST';
     return 'HOME';
   };
 
@@ -57,34 +65,48 @@ export default function HomePage() {
       <main className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
 
         {/* =========================================================================
-            🛡️ [관리자(ADMIN) 전용 탭 라우팅 허브]
+            🛡️ [ADMIN 전용 탭 라우팅 허브]
             ========================================================================= */}
         {isAdmin && (
           <div>
-            {activeTab === 'EXAM_CREATE' && <ExamCreateTab />}
-            {activeTab === 'POLICY_MGMT' && <PolicyMgmtTab />}
-            {activeTab === 'USER_MGMT' && <UserMgmtTab />}
-            {activeTab === 'CHEAT_MGMT' && <CheatMgmtTab />}
+            {activeTab === 'ORG_APPROVAL' && <OrgApprovalTab />}
+            {activeTab === 'MANAGER_MGMT' && <UserMgmtTab />}
+            {activeTab === 'ADMIN_EXAMS' && <AdminExamsTab />}
+            {activeTab === 'ADMIN_RESULTS' && <AdminResultsTab />}
+            {activeTab === 'SYSTEM_POLICY' && <PolicyMgmtTab />}
             {activeTab === 'AI_CONFIG' && <AiConfigTab />}
+            {activeTab === 'ADMIN_STATS' && <AdminStatsTab />}
           </div>
         )}
 
         {/* =========================================================================
-            👁️ [감독관(SUPERVISOR) 전용 탭 라우팅 허브] 🌟 새로 추가됨
+            🏢 [관리자(MANAGER) 전용 탭 라우팅 허브]
+            조직이 아직 승인/배정되지 않았다면 조직 신청 화면만 노출한다.
             ========================================================================= */}
-        {isSupervisor && (
+        {isManager && (
           <div>
-            {activeTab === 'LIVE_MONITORING' && <LiveMonitoringTab />}
-            {activeTab === 'CHEAT_LOGS' && <CheatLogsTab />}
-            {activeTab === 'EXAM_STATUS' && <ExamStatusTab />}
-            {activeTab === 'AI_REPORTS' && <SupervisorReportsTab />}
+            {!orgApproved ? (
+              <OrgRequestTab />
+            ) : (
+              <>
+                {activeTab === 'EXAMINEE_MGMT' && <ExamineeMgmtTab />}
+                {activeTab === 'EXAM_CREATE' && <ManagerExamCreateTab />}
+                {activeTab === 'INVITE_MAIL' && <InviteMailTab />}
+                {activeTab === 'POLICY_MGMT' && <ManagerPolicyTab />}
+                {activeTab === 'LIVE_MONITORING' && <LiveMonitoringTab />}
+                {activeTab === 'EXAM_STATUS' && <ExamStatusTab />}
+                {activeTab === 'CHEAT_LOGS' && <CheatLogsTab />}
+                {activeTab === 'RESULTS' && <ResultsTab />}
+                {activeTab === 'TEAM' && <TeamTab />}
+              </>
+            )}
           </div>
         )}
 
         {/* =========================================================================
             👤 [일반 응시자 / 게스트 전용 탭 라우팅 허브]
             ========================================================================= */}
-        {!isAdmin && !isSupervisor && (
+        {!isAdmin && !isManager && (
           <>
             {/* 타이틀 및 비회원 경고 바 (HOME이 아닐 때만 렌더링) */}
             {activeTab !== 'HOME' && (
@@ -93,7 +115,6 @@ export default function HomePage() {
                   {activeTab === 'EXAM' && '평가 목록'}
                   {activeTab === 'CHECK' && '사전 환경 점검 안내'}
                   {activeTab === 'PRACTICE' && '연습문제 목록'}
-                  {activeTab === 'RESULT' && '역량 평가 결과 조회'}
                   {activeTab === 'NOTICE' && '공지사항'}
                   {activeTab === 'FAQ' && '자주 묻는 질문 (FAQ)'}
                 </h1>
@@ -110,7 +131,6 @@ export default function HomePage() {
             {activeTab === 'EXAM' && <ExamTab onProtectedAction={handleProtectedAction} />}
             {activeTab === 'CHECK' && <CheckTab onProtectedAction={handleProtectedAction} />}
             {activeTab === 'PRACTICE' && <PracticeTab onProtectedAction={handleProtectedAction} />}
-            {activeTab === 'RESULT' && <ResultTab />}
             {activeTab === 'NOTICE' && <NoticeTab />}
             {activeTab === 'FAQ' && <FaqTab />}
           </>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, AlertTriangle, Clock, User } from 'lucide-react';
+import { ShieldAlert, AlertTriangle } from 'lucide-react';
 
 export default function CheatLogsTab() {
   const logs = [

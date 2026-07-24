@@ -2,8 +2,32 @@ import React from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   ShieldCheck, LogOut, LogIn, User, PlusSquare, FileText,
-  Users, ShieldAlert, Cpu, Monitor, Eye, AlertTriangle, BarChart3
+  Users, Cpu, Monitor, AlertTriangle, BarChart3,
+  Building2, Send, Award, ClipboardCheck, Settings, PieChart, UserPlus
 } from 'lucide-react';
+import { clearSession } from '../hooks/useCurrentUser';
+
+const ADMIN_TABS = [
+  { key: 'ORG_APPROVAL', label: '조직 승인/배정', icon: Building2 },
+  { key: 'MANAGER_MGMT', label: '관리자 계정 관리', icon: Users },
+  { key: 'ADMIN_EXAMS', label: '전체 시험 관리', icon: FileText },
+  { key: 'ADMIN_RESULTS', label: '전체 응시자·결과', icon: BarChart3 },
+  { key: 'SYSTEM_POLICY', label: '시스템 정책 관리', icon: Settings },
+  { key: 'AI_CONFIG', label: 'AI 분석 설정', icon: Cpu },
+  { key: 'ADMIN_STATS', label: '전체 통계', icon: PieChart }
+];
+
+const MANAGER_TABS = [
+  { key: 'EXAMINEE_MGMT', label: '응시자 이메일 관리', icon: UserPlus },
+  { key: 'EXAM_CREATE', label: '시험 생성/대상자 배정', icon: PlusSquare },
+  { key: 'INVITE_MAIL', label: '초대 메일 발송', icon: Send },
+  { key: 'POLICY_MGMT', label: '시험·문제·부정행위 정책', icon: FileText },
+  { key: 'LIVE_MONITORING', label: '실시간 화상 관제', icon: Monitor },
+  { key: 'EXAM_STATUS', label: '응시 현황', icon: ClipboardCheck },
+  { key: 'CHEAT_LOGS', label: '부정행위 감지 로그', icon: AlertTriangle },
+  { key: 'RESULTS', label: '점수·결과 관리', icon: Award },
+  { key: 'TEAM', label: '관리자 인원 추가', icon: Users }
+];
 
 export default function Header() {
   const navigate = useNavigate();
@@ -13,22 +37,17 @@ export default function Header() {
   const userRole = localStorage.getItem('userRole') || 'GUEST';
   const userEmail = localStorage.getItem('userEmail') || '비회원(게스트)';
   const userName = localStorage.getItem('userName') || userEmail.split('@')[0];
+  const orgApproved = localStorage.getItem('userOrgId') && localStorage.getItem('userOrgStatus') === 'APPROVED';
 
   const isAdmin = userRole === 'ADMIN';
-  const isSupervisor = userRole === 'SUPERVISOR';
+  const isManager = userRole === 'MANAGER';
 
-  // 권한별 기본 탭 설정
-  const getDefaultTab = () => {
-    if (isAdmin) return 'EXAM_CREATE';
-    if (isSupervisor) return 'LIVE_MONITORING';
-    return 'HOME';
-  };
+  const defaultTab = isAdmin ? 'ORG_APPROVAL' : (isManager ? (orgApproved ? 'EXAMINEE_MGMT' : 'ORG_REQUEST') : 'HOME');
 
-  const defaultTab = getDefaultTab();
   const currentTab = location.pathname === '/' ? defaultTab : (searchParams.get('tab') || defaultTab);
 
   const handleTabClick = (tabName) => {
-    if (!isAdmin && !isSupervisor && tabName === 'HOME') {
+    if (!isAdmin && !isManager && tabName === 'HOME') {
       navigate('/');
     } else {
       navigate(`/home?tab=${tabName}`);
@@ -36,10 +55,7 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
+    clearSession();
     alert('로그아웃되었습니다.');
     navigate('/login');
   };
@@ -49,7 +65,7 @@ export default function Header() {
   return (
     <header className="header">
       <div className="header-left-group">
-        <div className="logo-area" onClick={() => navigate(isAdmin ? '/home?tab=EXAM_CREATE' : isSupervisor ? '/home?tab=LIVE_MONITORING' : '/')}>
+        <div className="logo-area" onClick={() => navigate(isAdmin || isManager ? `/home?tab=${defaultTab}` : '/')}>
           <div className="logo-icon" style={{ width: 34, height: 34 }}>
             <ShieldCheck color="#ffffff" size={20} />
           </div>
@@ -59,42 +75,25 @@ export default function Header() {
         {!isAuthPage && (
           <nav className="header-nav">
             {isAdmin ? (
-              /* ================= 1. 관리자 전용 탭 5개 ================= */
-              <>
-                <button className={`header-tab-btn ${currentTab === 'EXAM_CREATE' ? 'active' : ''}`} onClick={() => handleTabClick('EXAM_CREATE')}>
-                  <PlusSquare size={16} style={{ marginRight: 6 }} /> 시험 생성
+              ADMIN_TABS.map(({ key, label, icon: Icon }) => (
+                <button key={key} className={`header-tab-btn ${currentTab === key ? 'active' : ''}`} onClick={() => handleTabClick(key)}>
+                  <Icon size={16} style={{ marginRight: 6 }} /> {label}
                 </button>
-                <button className={`header-tab-btn ${currentTab === 'POLICY_MGMT' ? 'active' : ''}`} onClick={() => handleTabClick('POLICY_MGMT')}>
-                  <FileText size={16} style={{ marginRight: 6 }} /> 문제/정책 관리
+              ))
+            ) : isManager ? (
+              orgApproved ? (
+                MANAGER_TABS.map(({ key, label, icon: Icon }) => (
+                  <button key={key} className={`header-tab-btn ${currentTab === key ? 'active' : ''}`} onClick={() => handleTabClick(key)}>
+                    <Icon size={16} style={{ marginRight: 6 }} /> {label}
+                  </button>
+                ))
+              ) : (
+                <button className={`header-tab-btn active`} onClick={() => handleTabClick('ORG_REQUEST')}>
+                  <Building2 size={16} style={{ marginRight: 6 }} /> 조직 신청
                 </button>
-                <button className={`header-tab-btn ${currentTab === 'USER_MGMT' ? 'active' : ''}`} onClick={() => handleTabClick('USER_MGMT')}>
-                  <Users size={16} style={{ marginRight: 6 }} /> 감독관 관리
-                </button>
-                <button className={`header-tab-btn ${currentTab === 'CHEAT_MGMT' ? 'active' : ''}`} onClick={() => handleTabClick('CHEAT_MGMT')}>
-                  <ShieldAlert size={16} style={{ marginRight: 6 }} /> 금지사항 관리
-                </button>
-                <button className={`header-tab-btn ${currentTab === 'AI_CONFIG' ? 'active' : ''}`} onClick={() => handleTabClick('AI_CONFIG')}>
-                  <Cpu size={16} style={{ marginRight: 6 }} /> AI 분석 설정
-                </button>
-              </>
-            ) : isSupervisor ? (
-              /* ================= 2. 감독관 전용 탭 4개 ================= */
-              <>
-                <button className={`header-tab-btn ${currentTab === 'LIVE_MONITORING' ? 'active' : ''}`} onClick={() => handleTabClick('LIVE_MONITORING')}>
-                  <Monitor size={16} style={{ marginRight: 6 }} /> 실시간 화상 관제
-                </button>
-                <button className={`header-tab-btn ${currentTab === 'CHEAT_LOGS' ? 'active' : ''}`} onClick={() => handleTabClick('CHEAT_LOGS')}>
-                  <AlertTriangle size={16} style={{ marginRight: 6 }} /> 부정행위 감지 로그
-                </button>
-                <button className={`header-tab-btn ${currentTab === 'EXAM_STATUS' ? 'active' : ''}`} onClick={() => handleTabClick('EXAM_STATUS')}>
-                  <BarChart3 size={16} style={{ marginRight: 6 }} /> 응시자 현황 관리
-                </button>
-                <button className={`header-tab-btn ${currentTab === 'AI_REPORTS' ? 'active' : ''}`} onClick={() => handleTabClick('AI_REPORTS')}>
-                  <FileText size={16} style={{ marginRight: 6 }} /> 응시자 AI 리포트 검토
-                </button>
-              </>
+              )
             ) : (
-              /* ================= 3. 비회원/방문자 전용 탭 (홈, 공지사항, FAQ만 노출) ================= */
+              /* ================= 비회원/방문자 전용 탭 (홈, 공지사항, FAQ만 노출) ================= */
               <>
                 <button className={`header-tab-btn ${currentTab === 'HOME' ? 'active' : ''}`} onClick={() => handleTabClick('HOME')}>홈</button>
                 <button className={`header-tab-btn ${currentTab === 'NOTICE' ? 'active' : ''}`} onClick={() => handleTabClick('NOTICE')}>공지사항</button>
@@ -111,7 +110,7 @@ export default function Header() {
             <div className="header-user-badge">
               <User size={14} color={isAdmin ? '#7c3aed' : '#16a34a'} />
               <span>
-                {userName}님 ({isAdmin ? '관리자' : '감독관'})
+                {userName}님 ({isAdmin ? 'ADMIN' : '관리자'})
               </span>
             </div>
             <button className="logout-btn header-logout-btn" onClick={handleLogout}>
