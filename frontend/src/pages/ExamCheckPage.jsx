@@ -8,6 +8,15 @@ export default function ExamCheckPage() {
   const videoRef = useRef(null);
   const displayRef = useRef(null);
 
+  // 초대 링크(/exam/enter)에서 응시번호 확인을 마친 응시자 정보 (없으면 비회원 미리보기로 간주)
+  const examEntry = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('examEntry') ?? 'null');
+    } catch (error) {
+      return null;
+    }
+  })();
+
   const [idVerified, setIdVerified] = useState(false);
   const [webcamReady, setWebcamReady] = useState(false);
   const [displayReady, setDisplayReady] = useState(false);
@@ -77,7 +86,9 @@ export default function ExamCheckPage() {
     <div className="container">
       <h1 className="main-title" style={{fontSize: '1.75rem', marginBottom: '0.5rem'}}>시험 사전 환경 점검</h1>
       <p className="sub-description" style={{marginBottom: '2rem'}}>
-        공정하고 안정적인 테스트 응시를 위해 본인 인증, PC 장비 및 보조 카메라 연결을 확인합니다.
+        {examEntry
+          ? `${examEntry.examineeName}님 (응시번호 ${examEntry.examNumber}) · ${examEntry.examTitle}`
+          : '공정하고 안정적인 테스트 응시를 위해 본인 인증, PC 장비 및 보조 카메라 연결을 확인합니다.'}
       </p>
 
       {errorMsg && (

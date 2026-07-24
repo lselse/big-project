@@ -142,6 +142,48 @@ test("manager can register examinees, create an exam, assign candidates, and sen
   assert.ok(inviteBody.invitations[0].token);
 });
 
+test("examinee can enter an exam via the invitation link using the token and exam number", async (context) => {
+  const { baseUrl, server } = await startServer();
+  context.after(() => server.close());
+
+  const login = await fetch(`${baseUrl}/api/auth/login`, asJson("POST", { email: "manager@aivle.com", password: "123", role: "MANAGER" }));
+  const { token } = await login.json();
+
+  const { created } = await (await fetch(`${baseUrl}/api/manager/examinees`, withAuth(token, asJson("POST", {
+    entries: [{ name: "응시자테스트", email: "entry-test@aivle.com" }]
+  })))).json();
+  const examinee = created[0];
+
+  const exam = await (await fetch(`${baseUrl}/api/manager/exams`, withAuth(token, asJson("POST", {
+    title: "입장 테스트 시험", duration: "30분", questions: "총 1문제"
+  })))).json();
+
+  await fetch(`${baseUrl}/api/manager/exams/${exam.id}/assignees`, withAuth(token, asJson("PUT", { examineeIds: [examinee.id] })));
+  const { invitations } = await (await fetch(`${baseUrl}/api/manager/exams/${exam.id}/invitations`, withAuth(token, asJson("POST", {})))).json();
+  const invitation = invitations[0];
+
+  // 유효하지 않은 토큰은 거부되어야 한다.
+  const invalidLookup = await fetch(`${baseUrl}/api/exam-entry/not-a-real-token`);
+  assert.equal(invalidLookup.status, 404);
+
+  // 정상 토큰이면 로그인 없이도 시험 정보를 조회할 수 있어야 한다.
+  const lookup = await fetch(`${baseUrl}/api/exam-entry/${invitation.token}`);
+  assert.equal(lookup.status, 200);
+  const lookupBody = await lookup.json();
+  assert.equal(lookupBody.exam.title, "입장 테스트 시험");
+
+  // 응시번호가 틀리면 입장이 거부되어야 한다.
+  const wrongNumber = await fetch(`${baseUrl}/api/exam-entry/${invitation.token}/verify`, asJson("POST", { examNumber: "00000000" }));
+  assert.equal(wrongNumber.status, 401);
+
+  // 올바른 토큰 + 응시번호 조합이면 입장이 승인되어야 한다.
+  const verify = await fetch(`${baseUrl}/api/exam-entry/${invitation.token}/verify`, asJson("POST", { examNumber: examinee.examNumber }));
+  assert.equal(verify.status, 200);
+  const verifyBody = await verify.json();
+  assert.equal(verifyBody.examinee.name, "응시자테스트");
+  assert.equal(verifyBody.exam.id, exam.id);
+});
+
 test("manager can manage org-scoped exam/problem/cheat policy", async (context) => {
   const { baseUrl, server } = await startServer();
   context.after(() => server.close());
