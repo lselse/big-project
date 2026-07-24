@@ -7,7 +7,7 @@ export default function LiveMonitoringTab() {
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    api.get('/supervisor/examinees', { headers: authHeaders() })
+    api.get('/manager/examinees', { headers: authHeaders() })
       .then(({ data }) => setExaminees(data))
       .catch(() => setLoadError('관제 데이터를 불러오지 못했습니다. 다시 로그인한 뒤 시도해주세요.'));
   }, []);
@@ -16,7 +16,7 @@ export default function LiveMonitoringTab() {
     const message = prompt(`[${examinee.name}] 응시자에게 보낼 경고 메시지를 입력하세요:`);
     if (!message) return;
     try {
-      const { data } = await api.post(`/supervisor/examinees/${examinee.id}/warnings`, { message }, { headers: authHeaders() });
+      const { data } = await api.post(`/manager/examinees/${examinee.id}/warnings`, { message }, { headers: authHeaders() });
       alert(`[전송 완료] ${examinee.name}님에게 ${data.message}`);
     } catch (error) {
       alert(apiErrorMessage(error, '경고를 전송하지 못했습니다.'));

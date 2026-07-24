@@ -102,6 +102,8 @@ main {
   align-items: center;
   gap: 0.5rem;
   height: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 /* 개별 탭 버튼 */
