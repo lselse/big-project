@@ -542,6 +542,52 @@ export const createApp = async ({ databasePath = resolve("data/database.json") }
     }
   });
 
+  // =======================================================================
+  // 응시자: 초대 메일 링크 기반 시험 입장 (회원가입/로그인 없이 토큰 + 응시번호로 확인)
+  // =======================================================================
+  app.get("/api/exam-entry/:token", (request, response) => {
+    const invitation = store.invitations.find((candidate) => candidate.token === request.params.token);
+    if (!invitation) return response.status(404).json({ message: "유효하지 않은 초대 링크입니다." });
+    if (new Date(invitation.expiresAt) < new Date()) return response.status(410).json({ message: "초대 링크가 만료되었습니다. 관리자에게 재발송을 요청해주세요." });
+
+    const exam = store.exams.find((candidate) => candidate.id === invitation.examId);
+    if (!exam) return response.status(404).json({ message: "시험 정보를 찾을 수 없습니다." });
+    const organization = store.organizations.find((candidate) => candidate.id === exam.orgId);
+
+    return response.json({
+      exam: { title: exam.title, date: exam.date, duration: exam.duration, questions: exam.questions },
+      organization: { name: organization?.name ?? "" },
+      expiresAt: invitation.expiresAt
+    });
+  });
+
+  app.post("/api/exam-entry/:token/verify", async (request, response, next) => {
+    try {
+      const invitation = store.invitations.find((candidate) => candidate.token === request.params.token);
+      if (!invitation) return response.status(404).json({ message: "유효하지 않은 초대 링크입니다." });
+      if (new Date(invitation.expiresAt) < new Date()) return response.status(410).json({ message: "초대 링크가 만료되었습니다. 관리자에게 재발송을 요청해주세요." });
+
+      if (!isNonEmptyText(request.body.examNumber)) {
+        return response.status(400).json({ message: "응시번호를 입력해주세요." });
+      }
+
+      const examinee = store.examinees.find((candidate) => candidate.id === invitation.examineeId);
+      const exam = store.exams.find((candidate) => candidate.id === invitation.examId);
+      if (!examinee || !exam) return response.status(404).json({ message: "시험 정보를 찾을 수 없습니다." });
+      if (examinee.examNumber !== request.body.examNumber.trim()) {
+        return response.status(401).json({ message: "응시번호가 일치하지 않습니다. 초대 메일을 다시 확인해주세요." });
+      }
+
+      await store.updateExaminee(examinee.id, { status: "NORMAL", statusText: "입장 완료 · 사전 점검 대기" });
+      return response.json({
+        examinee: { name: examinee.name, examNumber: examinee.examNumber },
+        exam: { id: exam.id, title: exam.title }
+      });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   app.use((error, _request, response, _next) => {
     console.error(error);
     response.status(500).json({ message: "서버 오류가 발생했습니다." });
